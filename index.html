@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyLearning | Premium Assessment UI</title>
+    
+    <!-- Scripts & Styles -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F8F9FC; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion, AnimatePresence } = FramerMotion;
+
+        // --- Icons (Lucide Helper) ---
+        const Icon = ({ name, size = 24, className = "" }) => {
+            useEffect(() => { lucide.createIcons(); }, []);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        // --- Main App Component ---
+        const MyLearningApp = () => {
+            const [page, setPage] = useState('auth'); // auth | dash | test | result
+            const [selectedTest, setSelectedTest] = useState(null);
+
+            return (
+                <div className="min-h-screen text-slate-900">
+                    <AnimatePresence mode="wait">
+                        {page === 'auth' && <AuthScreen onLogin={() => setPage('dash')} />}
+                        {page === 'dash' && (
+                            <Dashboard 
+                                onStartTest={(test) => { setSelectedTest(test); setPage('test'); }} 
+                                onLogout={() => setPage('auth')}
+                            />
+                        )}
+                        {page === 'test' && <TestInterface onFinish={() => setPage('result')} />}
+                        {page === 'result' && <ResultScreen onBack={() => setPage('dash')} />}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        // --- 🔐 Auth Screen ---
+        const AuthScreen = ({ onLogin }) => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex h-screen bg-white">
+                <div className="hidden lg:flex w-1/2 bg-slate-900 relative items-center justify-center overflow-hidden">
+                    <div className="absolute w-96 h-96 bg-indigo-600/20 blur-[100px] rounded-full -top-10 -left-10"></div>
+                    <div className="z-10 text-center">
+                        <div className="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl rotate-12">
+                            <Icon name="book-open" className="text-white" />
+                        </div>
+                        <h2 className="text-white text-3xl font-light tracking-tight">Practice. Improve. Prove.</h2>
+                    </div>
+                </div>
+                <div className="w-full lg:w-1/2 flex items-center justify-center p-12 bg-[#F8F9FC]">
+                    <div className="max-w-md w-full">
+                        <h1 className="text-4xl font-semibold mb-2">Welcome to MyLearning</h1>
+                        <p className="text-slate-400 mb-8 font-light">Create your personal performance cockpit.</p>
+                        <div className="space-y-4">
+                            <input className="w-full border-b border-slate-200 bg-transparent py-4 outline-none focus:border-indigo-600 transition-colors" placeholder="Full Name" />
+                            <input className="w-full border-b border-slate-200 bg-transparent py-4 outline-none focus:border-indigo-600 transition-colors" placeholder="Email Address" />
+                            <button onClick={onLogin} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-medium mt-8 hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100">
+                                Join Platform
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        );
+
+        // --- 📊 Dashboard ---
+        const Dashboard = ({ onStartTest, onLogout }) => (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 lg:pl-32 max-w-7xl mx-auto">
+                {/* Sidebar */}
+                <nav className="fixed left-8 top-1/2 -translate-y-1/2 w-20 py-10 flex flex-col items-center justify-between h-[450px] glass rounded-full shadow-2xl z-50">
+                    <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white"><Icon name="user" size={20} /></div>
+                    <div className="space-y-8">
+                        <Icon name="layout-dashboard" className="text-indigo-600" />
+                        <Icon name="award" className="text-slate-300 hover:text-slate-500 cursor-pointer" />
+                        <Icon name="settings" className="text-slate-300 hover:text-slate-500 cursor-pointer" />
+                    </div>
+                    <button onClick={onLogout}><Icon name="log-out" className="text-slate-300" /></button>
+                </nav>
+
+                <header className="mb-12">
+                    <h1 className="text-4xl font-semibold">Dashboard</h1>
+                    <p className="text-slate-400 font-light mt-1 uppercase tracking-widest text-xs">Your performance. Your proof.</p>
+                </header>
+
+                <div className="grid grid-cols-12 gap-8">
+                    {/* Performance Card */}
+                    <div className="col-span-12 lg:col-span-8 p-10 rounded-[40px] glass flex justify-between items-center relative overflow-hidden group">
+                        <div>
+                            <p className="text-indigo-600 font-medium mb-2">Learning Progress</p>
+                            <h3 className="text-3xl font-semibold mb-6">Top 5% Achievement</h3>
+                            <div className="flex gap-4">
+                                <span className="px-4 py-2 bg-indigo-50 rounded-xl text-indigo-600 text-xs font-bold">128 HOURS</span>
+                                <span className="px-4 py-2 bg-emerald-50 rounded-xl text-emerald-600 text-xs font-bold">14 CERTIFICATES</span>
+                            </div>
+                        </div>
+                        <div className="w-40 h-40 border-[12px] border-slate-100 rounded-full flex items-center justify-center relative">
+                            <span className="text-3xl font-bold">88%</span>
+                            <svg className="absolute inset-0 -rotate-90"><circle cx="80" cy="80" r="74" fill="none" stroke="#4F46E5" strokeWidth="12" strokeDasharray="465" strokeDashoffset="55" strokeLinecap="round" /></svg>
+                        </div>
+                    </div>
+
+                    {/* Cert Card */}
+                    <div className="col-span-12 lg:col-span-4 bg-slate-900 p-10 rounded-[40px] text-white flex flex-col justify-between">
+                        <Icon name="award" size={32} className="text-indigo-400" />
+                        <div>
+                            <h4 className="text-4xl font-bold">08</h4>
+                            <p className="text-slate-400 text-sm">Downloadable Achievements</p>
+                        </div>
+                    </div>
+
+                    {/* Test Cards */}
+                    {['Commerce Aptitude', 'Science & Logic', 'Creative Design'].map((test, i) => (
+                        <div key={i} className="col-span-12 lg:col-span-4 p-8 rounded-[40px] glass hover:shadow-2xl transition-all group cursor-pointer">
+                            <div className="w-14 h-14 bg-white shadow-sm border border-slate-100 rounded-2xl mb-6 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Icon name="zap" className="text-indigo-600" />
+                            </div>
+                            <h4 className="text-xl font-semibold mb-4">{test}</h4>
+                            <div className="flex items-center justify-between mt-8">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">45 Mins</span>
+                                <button onClick={() => onStartTest(test)} className="p-3 bg-slate-900 text-white rounded-xl group-hover:bg-indigo-600 transition-colors">
+                                    <Icon name="arrow-right" size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
+        );
+
+        // --- ⏱ Test Interface ---
+        const TestInterface = ({ onFinish }) => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto py-20 px-6">
+                <div className="flex justify-between items-center mb-10">
+                    <div className="px-6 py-2 glass rounded-full font-mono text-indigo-600 font-bold">⏱ 24:59</div>
+                    <div className="text-slate-400 text-sm tracking-widest uppercase">Question 04/20</div>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 rounded-full mb-16 overflow-hidden">
+                    <div className="h-full bg-indigo-600 w-1/4"></div>
+                </div>
+                <div className="p-12 rounded-[40px] glass">
+                    <h2 className="text-2xl font-medium leading-relaxed text-slate-800 mb-10">
+                        In a market with perfectly elastic demand, what happens to total revenue if the supply curve shifts to the left?
+                    </h2>
+                    <div className="space-y-4">
+                        {['Revenue Increases', 'Revenue Decreases', 'Remains Constant', 'Becomes Zero'].map((ans, i) => (
+                            <button key={i} onClick={onFinish} className="w-full text-left p-6 rounded-2xl border border-slate-100 hover:border-indigo-600 hover:bg-indigo-50 transition-all flex justify-between group">
+                                <span className="group-hover:text-indigo-700">{ans}</span>
+                                <div className="w-6 h-6 rounded-full border-2 border-slate-200 group-hover:border-indigo-600"></div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
+        );
+
+        // --- 🏁 Result & Certificate ---
+        const ResultScreen = ({ onBack }) => (
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="h-screen flex items-center justify-center p-6 text-center">
+                <div className="max-w-xl w-full">
+                    <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <Icon name="check-circle" size={48} />
+                    </div>
+                    <h1 className="text-4xl font-bold mb-4">Assessment Complete!</h1>
+                    <p className="text-slate-500 mb-10 font-light">Congratulations, you've passed the Commerce Aptitude test with a score of 92%.</p>
+                    
+                    <div className="p-8 rounded-[32px] glass border-2 border-indigo-100 mb-10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12"><Icon name="award" size={100} /></div>
+                        <p className="text-xs uppercase tracking-[0.2em] font-bold text-indigo-600 mb-2">Verified Certificate</p>
+                        <h3 className="text-xl font-serif text-slate-800">Certificate of Excellence</h3>
+                        <div className="mt-6 flex justify-center">
+                            <button className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-sm hover:bg-indigo-600 transition-all">
+                                <Icon name="download" size={16} /> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button onClick={onBack} className="text-slate-400 hover:text-indigo-600 font-medium">Return to Dashboard</button>
+                </div>
+            </motion.div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MyLearningApp />);
+    </script>
+</body>
+</html>
